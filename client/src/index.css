@@ -1,0 +1,50 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Nunito Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Rubik', ui-sans-serif, system-ui, sans-serif;
+
+  --color-forest-950: #12291b;
+  --color-forest-900: #1e4429;
+  --color-forest-800: #2c5a37;
+  --color-forest-700: #2c7a3f;
+  --color-forest-100: #e7ede3;
+  --color-forest-50: #f1f4ee;
+  --color-cream: #f6f3ea;
+  --color-paper: #fffdf7;
+  --color-line: #e2dccb;
+  --color-wheat: #e3a33b;
+  --color-wheat-dark: #8f5a10;
+  --color-ink: #16301f;
+  --color-muted: #4a5a4e;
+}
+
+html {
+  background: var(--color-cream);
+  color: var(--color-ink);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+.prose-agro p + p,
+.prose-agro p + ul,
+.prose-agro ul + p {
+  margin-top: 0.75rem;
+}
+.prose-agro ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.prose-agro li + li {
+  margin-top: 0.25rem;
+}

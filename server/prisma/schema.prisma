@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  passwordHash String
+  name         String
+  region       String?
+  district     String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  favorites    Favorite[]
+  chats        ChatSession[]
+  farm         Farm?
+  reminders    Reminder[]
+  notifications Notification[]
+  plantings    Planting[]
+}
+
+model Crop {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  emoji       String
+  category    String
+  summary     String
+  plantingTime String
+  soil        String
+  irrigation  String
+  fertilizing String
+  diseases    String[]
+  pests       String[]
+  careStages  Json
+  harvest     String
+  regions     String[]
+  // Maslahatchi (advisor) uchun parametrlar
+  landTypes   String[] // paxta-galla | sabzavot-poliz
+  minBonitet  Int
+  waterNeed   Int      // 1 kam | 2 o'rta | 3 ko'p
+  yieldMinT   Float    // t/ga
+  yieldMaxT   Float
+  growDays    Int
+  fertilizerPerHa String
+  agroWorks   String[]
+  updatedAt   DateTime @updatedAt
+}
+
+model Disease {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  kind        String   // kasallik | zararkunanda
+  crops       String[]
+  symptoms    String[]
+  causes      String[]
+  prevention  String[]
+  safeCare    String[]
+  whenExpert  String
+  updatedAt   DateTime @updatedAt
+}
+
+model Article {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  title      String
+  excerpt    String
+  body       String
+  category   String
+  season     String?
+  readMinutes Int
+  views      Int      @default(0)
+  publishedAt DateTime @default(now())
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  kind       String   // article | crop | disease
+  slug       String
+  title      String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind, slug])
+}
+
+model ChatSession {
+  id        String        @id @default(cuid())
+  userId    String
+  title     String
+  crop      String?
+  region    String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id        String      @id @default(cuid())
+  sessionId String
+  role      String      // user | model
+  content   String
+  hadImage  Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model Farm {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  state     Json
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Planting {
+  id         String    @id @default(cuid())
+  userId     String
+  cropSlug   String
+  cropName   String
+  area       Float     // gektar
+  plantedAt  DateTime
+  status     String    @default("active") // active | harvested
+  harvestKg  Float?
+  revenue    Float?    // so'm
+  taxPaid    Float?    // so'm
+  note       String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses   Expense[]
+  reminders  Reminder[]
+
+  @@index([userId])
+}
+
+model Expense {
+  id         String   @id @default(cuid())
+  plantingId String
+  category   String   // urug | ogit | dori | suv | texnika | ish-haqi | ijara | boshqa
+  amount     Float    // so'm
+  spentAt    DateTime
+  note       String?
+  createdAt  DateTime @default(now())
+  planting   Planting @relation(fields: [plantingId], references: [id], onDelete: Cascade)
+
+  @@index([plantingId])
+}
+
+model MarketPrice {
+  id         String   @id @default(cuid())
+  product    String
+  market     String
+  price      Int      // so'm
+  unit       String   @default("kg")
+  source     String   // demo | integratsiya manbasi nomi
+  recordedAt DateTime
+
+  @@unique([product, market, recordedAt])
+  @@index([recordedAt])
+}
+
+model Reminder {
+  id        String   @id @default(cuid())
+  userId    String
+  plantingId String?
+  title     String
+  crop      String?
+  type      String   // sugorish | ogitlash | himoya | ekish | hosil | boshqa
+  dueDate   DateTime
+  note      String?
+  done      Boolean  @default(false)
+  notified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planting  Planting? @relation(fields: [plantingId], references: [id], onDelete: Cascade)
+
+  @@index([userId, dueDate])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
